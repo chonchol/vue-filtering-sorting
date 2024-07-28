@@ -1,9 +1,9 @@
 <script>
-import FilterSorting from './components/FilterSorting.vue'
+import Products from './components/Products.vue'
 
 export default {
   components:{
-    FilterSorting
+    Products
   },
   data(){
     return{
@@ -16,7 +16,7 @@ export default {
 
 <template>
   <main>
-    <FilterSorting />
+    <Products />
   </main>
 </template>
 

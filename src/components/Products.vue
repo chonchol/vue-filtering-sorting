@@ -1,0 +1,493 @@
+<script>
+import axios from "axios";
+export default {
+  data(){
+    return{
+      products: [],
+      selectedBrands: []
+    }
+  },
+  methods: {
+    async getProduct() {
+      const response = await axios.get("http://localhost:3000/products");
+      this.products = response.data
+
+      // const allProducts = this.products
+      // for(var i = 0; i <= this.products.length; i++ ){
+      //   this.categories = this.products[i].category
+      //   console.log(this.products[i].category)
+      // }
+      console.log(this.products);
+      // console.log(this.category);
+    },
+  },
+
+computed:{
+
+  uniqueCategories() {
+    let categoryCounts = {};
+    this.products.forEach(product => {
+      if (categoryCounts[product.category]) {
+        categoryCounts[product.category]++;
+      } else {
+        categoryCounts[product.category] = 1;
+      }
+    });
+    return categoryCounts;
+  },
+
+  // uniqueBrands() {
+  //   let brandCount = {};
+  //   this.products.forEach(product => {
+  //     if (brandCount[product.brand]) {
+  //       brandCount[product.brand]++;
+  //     } else {
+  //       brandCount[product.brand] = 1;
+  //     }
+  //   });
+  //   return brandCount;
+  // },
+
+  availableBrands() {
+      return [...new Set(this.products.map(product => product.brand))];
+    },
+    filteredProducts() {
+      if (this.selectedBrands.length === 0) {
+        return this.products;
+      }
+      return this.products.filter(product => this.selectedBrands.includes(product.brand));
+    }
+
+
+},
+
+  beforeMount() {
+    this.getProduct();
+  },
+};
+</script>
+
+<template>
+  <div class="content-area">
+    <div class="left-sidebar">
+      <div class="filter-group">
+        <div class="label">
+          <span>Availability</span>
+        </div>
+        <div class="items">
+          <label class="filter">
+            <input type="checkbox" name="status" value="7" />
+            <span>In Stock</span>
+          </label>
+          <label class="filter">
+            <input type="checkbox" name="status" value="8" />
+            <span>Low Stock</span>
+          </label>
+          <label class="filter">
+            <input type="checkbox" name="status" value="9" />
+            <span>Out of Stock</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="label">
+          <span>Price</span>
+        </div>
+        <div class="items price-area">
+          <label class="range-label from"><input type="text" id="range-to" name="from"></label>
+          <label class="range-label to"><input type="text" id="range-from" name="to"></label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <div class="label">
+          <span>Category</span>
+        </div>
+
+        <div class="items">
+          <label class="filter" v-for="(count, category) in uniqueCategories" :key="category">
+            <input type="checkbox" name="filter" value="1058" />
+            <span>{{ category }} - {{ count }}</span>
+          </label>
+        </div>
+
+      </div>
+
+      <div class="filter-group">
+        <div class="label">
+          <span>Brand</span>
+        </div>
+        <div class="items">
+          <!-- <label class="filter" v-for="(count, brand) in uniqueBrands" :key="brand">
+            <input type="checkbox" name="status" value="7" />
+            <span>{{ brand }} - {{ count }}</span>
+          </label> -->
+
+          <label class="filter" v-for="brand in availableBrands" :key="brand">
+            <input type="checkbox" :value="brand" v-model="selectedBrands" />
+            <span>{{ brand }}</span>
+          </label>
+          
+
+          <!-- <label v-for="brand in availableBrands" :key="brand">
+        <input type="checkbox" :value="brand" v-model="selectedBrands" /> {{ brand }}
+      </label> -->
+
+        </div>
+      </div>
+
+
+    </div>
+    <div class="right-area">
+      <div class="top-bar ws-box">
+        <div class="sorting-filtering">
+          <div class="">
+            <label class="page-heading m-hide">All Products</label>
+          </div>
+          <div class="show-sort">
+            <div class="form-group">
+              <label>Show:</label>
+              <div class="custom-select">
+                <select id="input-limit">
+                  <option value="10" selected="selected">10</option>
+                  <option value="20">20</option>
+                  <option value="30">30</option>
+                  <option value="40">40</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Sort By:</label>
+              <div class="custom-select">
+                <select id="input-sort">
+                  <option value="">Default</option>
+                  <option value="">Price (Low &gt; High)</option>
+                  <option value="">Price (High &gt; Low)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+<!-- <div>
+
+  <div>
+      <label v-for="brand in availableBrands" :key="brand">
+        <input type="checkbox" :value="brand" v-model="selectedBrands" /> {{ brand }}
+      </label>
+    </div>
+    <ul>
+      <li v-for="product in filteredProducts" :key="product.id">
+        {{ product.title }} ({{ product.brand }})
+      </li>
+    </ul>
+
+</div> -->
+
+
+
+
+
+
+      <div class="main-content p-items-wrap">
+
+
+            <div class="p-item" v-for="product in filteredProducts">
+              <div class="p-item-inner">
+                <div class="marks">
+                  <span class="mark">Save: {{ product.discountPercentage }}%</span>                                        
+                </div>
+                <div class="p-item-img">
+                  <a href="#">
+                    <img :src="product.thumbnail" :alt="product.title" width="228" height="228">
+                  </a>
+                </div>
+                <div class="p-item-details">
+                  <h4 class="p-item-name"> 
+                    <a href="#">{{ product.title }}</a>
+                  </h4>
+                  <div class="short-description">
+                    <!-- <p>{{ product.description.substring(0,80) }}...</p> -->
+                    <ul>
+                      <li ><b>Brand:</b> {{ product.brand }}</li>
+                      <li><b>Category:</b> {{ product.category }}</li>
+                      <li><b>Stock:</b> {{ product.stock }}</li>
+                      <li><b>Tags:</b> <span v-for="tag in product.tags">{{ tag }}, </span></li>
+                    </ul>
+                  </div>
+                  <div class="p-item-price">
+                      <span class="price-new">${{ product.price }}</span> <span class="price-old">62,000৳</span>
+                  </div>
+                  <div class="actions">
+                      <span class="st-btn btn-add-cart" type="button"> Buy Now</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.content-area {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.left-sidebar{
+  width: 20%;
+  margin-right: 20px;
+}
+.right-area{
+  width: 80%;
+}
+.items{
+  display: flex;
+    flex-direction: column;
+    padding: 10px 20px 10px;
+    margin-right: 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+.filter-group{
+  background-color: white;
+  margin-bottom: 10px;
+}
+.label{
+  padding: 0 0 0 20px;
+    height: 50px;
+    line-height: 50px;
+    cursor: pointer;
+    color: #111;
+    font-size: 17px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-group .items label.filter span {
+    display: block;
+    margin-left: 25px;
+    line-height: 20px;
+    color: #111;
+    text-transform: capitalize;
+}
+.filter-group .items label.filter input {
+    margin-right: 10px;
+    height: 16px;
+    width: 16px;
+    position: relative;
+    top: 2px;
+    float: left;
+}
+.filter-group .items label.filter:hover {
+    background: #f2f4f8;
+}
+.filter-group .items label.filter {
+    display: inline-block;
+    width: 100%;
+    padding: 6px;
+    margin: 0 -6px;
+    font-size: 14px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.top-bar {
+    padding: 10px 10px 10px 20px;
+    margin-bottom: 10px;
+}
+.top-bar .page-heading {
+    font-size: 16px;
+    line-height: 30px;
+    font-weight: bold;
+}
+.top-bar .show-sort {
+    text-align: right;
+}
+.show-sort .form-group {
+    display: inline-block;
+    padding-left: 10px;
+    margin-bottom: 0;
+}
+.show-sort .form-group label {
+    padding-right: 5px;
+    color: #666;
+}
+.show-sort .form-group select {
+    background: #f1f3f5;
+    padding: 6px 5px;
+    font-size: 14px;
+    border: none;
+    position: relative;
+    outline: none;
+    height: 30px;
+    max-width: 110px;
+}
+select option {
+    font-size: 15px;
+    line-height: 30px;
+}
+.ws-box {
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+}
+.sorting-filtering{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.p-items-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -5px;
+    padding: 0;
+    justify-content: flex-start;
+}
+.p-item {
+    flex: 0 0 20%;
+    max-width: 20%;
+    padding: 0 5px 10px;
+    margin-bottom: 0;
+    display: flex;
+    position: relative;
+}
+.p-item-inner {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    background: #fff;
+    border-radius: 5px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
+}
+.marks {
+    display: flex;
+    position: absolute;
+    top: 15px;
+    left: 0;
+    z-index: 10;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.marks .mark {
+    background: #6e2594;
+    width: auto;
+    color: #fff;
+    font-size: 12px;
+    padding: 3px 10px;
+    line-height: 14px;
+    margin-bottom: 2px;
+    border-radius: 0 20px 20px 0;
+    flex: 0 0 auto;
+}
+.p-item-img {
+    text-align: center;
+    border-bottom: 3px solid rgba(55, 73, 187, .03);
+    flex: 0 0 220px;
+    padding: 20px;
+    margin: 0;
+}
+.p-item-img img{
+  max-width: 100%;
+}
+.p-item-details {
+    padding: 15px;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+.p-item-name {
+    margin: 0 0 15px;
+    line-height: 20px;
+    overflow: hidden;
+    font-weight: 600;
+    font-size: 14px;
+    position: relative;
+    height: auto;
+}
+.p-item .short-description {
+    padding: 10px 0 0 14px;
+    flex: 1 1 auto;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 5px;
+}
+.short-description ul{
+  padding-left: 0px;
+}
+.short-description li {
+    font-size: 13px;
+    color: #666;
+    position: relative;
+    line-height: 16px;
+    padding-bottom: 10px;
+    list-style: none;
+}
+.p-item .p-item-price {
+    padding-top: 10px;
+    flex: 0 0 22px;
+    text-align: center;
+}
+
+.p-item-price {
+    line-height: 22px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #ef4a23;
+}
+.p-item-price .price-old {
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: line-through;
+    color: #666;
+    padding-left: 5px;
+}
+.p-item .actions {
+    flex: 0 0 60px;
+    display: inline-block;
+    width: 100%;
+    padding: 15px 0 10px;
+}
+.p-item .actions .st-btn {
+    display: flex;
+    flex-wrap: nowrap;
+    line-height: 34px;
+    background: #fff;
+    background: rgba(55,73,187,.05);
+    color: #3749bb;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 0 14px;
+    cursor: pointer;
+    justify-content: center;
+    align-content: center;
+    text-decoration: none;
+}
+.p-item .actions .st-btn:hover {
+    background: #3749bb;
+    color: #fff;
+}
+.range-label input {
+    float: left;
+    width: 80px;
+    height: 30px;
+    border: 1px solid #c5cbd5;
+    margin: 5px 0 0 -1px;
+    outline: 0;
+    padding: 6px 0;
+    border-radius: 0;
+    font-size: 14px;
+    text-align: center;
+}
+.price-area{
+  flex-direction: row;
+  justify-content: space-around;
+}
+</style>
