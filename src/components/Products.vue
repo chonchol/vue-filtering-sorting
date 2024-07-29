@@ -17,10 +17,10 @@ export default {
   },
   methods: {
     async getProduct() {
-      const response = await axios.get("http://localhost:3000/products");
-      this.products = response.data;
+      const response = await axios.get("https://dummyjson.com/products");
+      this.products = response.data.products;
 
-      console.log(this.products);
+      // console.log(this.products.products);
     },
   },
 
