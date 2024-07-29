@@ -8,7 +8,11 @@ export default {
       selectedStatuses: [],
       selectedCategories: [],
       sortOption: "",
-      showOption: "",
+      productsPerPage: 10,  
+      currentPage: 1,
+      pageOptions: [10, 20, 30],  
+      priceFrom: 0,  
+      priceTo: Infinity,  
     };
   },
   methods: {
@@ -18,6 +22,19 @@ export default {
 
       console.log(this.products);
     },
+  },
+
+  watch: {
+    productsPerPage() {
+      this.currentPage = 1;  
+      console.log(this.currentPage)
+    },
+    priceFrom() {
+      this.currentPage = 1;  
+    },
+    priceTo() {
+      this.currentPage = 1;  
+    }
   },
 
   computed: {
@@ -36,14 +53,13 @@ export default {
     },
 
     filteredProducts() {
-      // if (this.selectedBrands.length === 0 && this.selectedStatuses.length === 0 && this.selectedCategories.length === 0) {
-      //   return this.products;
-      // }
 
       let filtered = this.products.filter((product) => {
         const statusMatch =
           this.selectedStatuses.length === 0 ||
           this.selectedStatuses.includes(product.availabilityStatus);
+
+        const priceMatch = product.price >= this.priceFrom && product.price <= this.priceTo;
 
         const categoryMatch =
           this.selectedCategories.length === 0 ||
@@ -52,7 +68,7 @@ export default {
         const brandMatch =
           this.selectedBrands.length === 0 ||
           this.selectedBrands.includes(product.brand);
-        return statusMatch && categoryMatch && brandMatch;
+        return statusMatch && priceMatch && categoryMatch && brandMatch;
       });
 
       if (this.sortOption === "highToLow") {
@@ -63,6 +79,13 @@ export default {
 
       return filtered;
     },
+
+    paginatedProducts() {
+      const start = (this.currentPage - 1) * this.productsPerPage;
+      const end = start + this.productsPerPage;
+      return this.filteredProducts.slice(start, end);
+    }
+
   },
 
   beforeMount() {
@@ -92,10 +115,10 @@ export default {
         </div>
         <div class="items price-area">
           <label class="range-label from">
-            <input type="number" id="range-to" name="from" value="0" />
+            <input type="number" id="range-to" v-model.number="priceFrom"/>
           </label>
           <label class="range-label to">
-            <input type="number" id="range-from" name="to" value="100" />
+            <input type="number" id="range-from" v-model.number="priceTo" />
           </label>
         </div>
       </div>
@@ -143,11 +166,8 @@ export default {
             <div class="form-group">
               <label>Show:</label>
               <div class="custom-select">
-                <select id="input-limit">
-                  <option value="10" selected="selected">10</option>
-                  <option value="20">20</option>
-                  <option value="30">30</option>
-                  <option value="40">40</option>
+                <select id="input-limit" v-model="productsPerPage">
+                  <option v-for="count in pageOptions" :key="count" :value="count">{{ count }}</option>
                 </select>
               </div>
             </div>
@@ -166,7 +186,7 @@ export default {
       </div>
 
       <div class="main-content p-items-wrap">
-        <div class="p-item" v-for="product in filteredProducts">
+        <div class="p-item" v-for="product in paginatedProducts">
           <div class="p-item-inner">
             <div class="marks">
               <span class="mark">Save: {{ product.discountPercentage }}%</span>
